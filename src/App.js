@@ -1,23 +1,45 @@
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import TicketList from './components/TicketList';
+import NewTicketForm from './components/NewTicketForm';
 import './App.css';
 
 function App() {
+  const [tickets, setTickets] = useState([]);
+
+  const fetchTickets = () => {
+    axios.get('/api/tickets')
+      .then(response => {
+        setTickets(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching tickets:', error);
+      });
+  };
+
+  const addTicket = (newTicket) => {
+    setTickets([...tickets, newTicket]); // Update tickets state with the newly added ticket
+  };
+
+  const deleteTicket = (id) => {
+    axios.delete(`/api/tickets/${id}`)
+      .then(() => {
+        setTickets(tickets.filter(ticket => ticket.id !== id));
+      })
+      .catch(error => {
+        console.error('Error deleting ticket:', error);
+      });
+  };
+
+  useEffect(() => {
+    fetchTickets();
+  }, []);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>Simple Ticketing System</h1>
+      <NewTicketForm addTicket={addTicket} />
+      <TicketList tickets={tickets} deleteTicket={deleteTicket} />
     </div>
   );
 }
